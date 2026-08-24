@@ -1,4 +1,6 @@
 #include <dirent.h>
+#include <fcntl.h>
+#include <signal.h>
 #include <assert.h>
 #include <ctype.h>
 #include <getopt.h>
@@ -481,6 +483,7 @@ static void parse_command_line(int argc, char **argv,
 		{"help", no_argument, NULL, 'h'},
 		{"image", required_argument, NULL, 'i'},
 		{"random", required_argument, NULL, 'r'},
+		{"daemonise", no_argument, NULL, 'd'},
 		{"mode", required_argument, NULL, 'm'},
 		{"output", required_argument, NULL, 'o'},
 		{"version", no_argument, NULL, 'v'},
@@ -494,6 +497,7 @@ static void parse_command_line(int argc, char **argv,
 		"  -h, --help             Show help message and quit.\n"
 		"  -i, --image <path>     Set the image to display.\n"
 		"  -r, --random <path>    Set a random image from a directory to display.\n"
+		"  -d, --daemonise        Run in the background/\n"
 		"  -m, --mode <mode>      Set the mode to use for the image.\n"
 		"  -o, --output <name>    Set the output to operate on or * for all.\n"
 		"  -v, --version          Show the version number and quit.\n"
@@ -509,7 +513,7 @@ static void parse_command_line(int argc, char **argv,
 	int c;
 	while (1) {
 		int option_index = 0;
-		c = getopt_long(argc, argv, "c:hi:r:m:o:v", long_options, &option_index);
+		c = getopt_long(argc, argv, "c:hi:r:dm:o:v", long_options, &option_index);
 		if (c == -1) {
 			break;
 		}
@@ -555,7 +559,21 @@ static void parse_command_line(int argc, char **argv,
 		    char *image_path = malloc(len + 1);
 		    snprintf(image_path, len + 1, "%s/%s", optarg, image_name);
             config->image_path = image_path;
+            dprintf(3, "%s\n", image_path);
 		    free(dir); free(files);
+		    break;
+		case 'd':
+            pid_t pid = fork();
+            if (pid < 0) swaybg_log(LOG_ERROR, "Detach failed");
+            if (pid > 0) _exit(0);
+            if (setsid() == -1) swaybg_log(LOG_ERROR, "Detach failed");
+            signal(SIGHUP, SIG_IGN);
+            int fd = open("/dev/null", O_RDWR);
+            if (fd == -1) swaybg_log(LOG_ERROR, "Detach failed");
+            dup2(fd, STDIN_FILENO);
+            dup2(fd, STDOUT_FILENO);
+            dup2(fd, STDERR_FILENO);
+            if (fd > STDERR_FILENO) close(fd);
 		    break;
 		case 'm':  // mode
 			config->mode = parse_background_mode(optarg);

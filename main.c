@@ -583,8 +583,8 @@ static void parse_command_line(int argc, char **argv,
             notify_init("swaybg");
             gchar *image_basename = g_path_get_basename(config->image_path);
             notif = notify_notification_new(image_basename, NULL, NULL);
-            g_free(image_name);
             notify_notification_show(notif, NULL);
+            g_free(image_basename);
             break;
 		case 'm':  // mode
 			config->mode = parse_background_mode(optarg);

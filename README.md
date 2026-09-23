@@ -6,18 +6,11 @@ any Wayland compositor which implements the wlr-layer-shell protocol and
 
 See the man page, `swaybg(1)`, for instructions on using swaybg.
 
-## Release Signatures
-
-Releases are signed with [E88F5E48](https://keys.openpgp.org/search?q=34FF9526CFEF0E97A340E2E40FDE7BE0E88F5E48)
-and published [on GitHub](https://github.com/swaywm/swaybg/releases). swaybg
-releases are managed independently of sway releases.
-
 ## Installation
 
 ### From Packages
 
-swaybg is available in many distributions. Try installing the "swaybg"
-package for yours.
+Here will be Gentoo overlay and Arch makepkg instructions.
 
 ### Compiling from Source
 
@@ -28,6 +21,7 @@ Install dependencies:
 * wayland-protocols \*
 * cairo
 * gdk-pixbuf2 (optional: image formats other than PNG)
+* libnotify (optional: show image name in desktop notification)
 * [scdoc](https://git.sr.ht/~sircmpwn/scdoc) (optional: man pages) \*
 * git (optional: version information) \*
 

@@ -1,4 +1,5 @@
 #include <dirent.h>
+#include <libnotify/notify.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <assert.h>
@@ -484,6 +485,7 @@ static void parse_command_line(int argc, char **argv,
 		{"image", required_argument, NULL, 'i'},
 		{"random", required_argument, NULL, 'r'},
 		{"daemonise", no_argument, NULL, 'd'},
+		{"notify", no_argument, NULL, 'n'},
 		{"mode", required_argument, NULL, 'm'},
 		{"output", required_argument, NULL, 'o'},
 		{"version", no_argument, NULL, 'v'},
@@ -498,6 +500,7 @@ static void parse_command_line(int argc, char **argv,
 		"  -i, --image <path>     Set the image to display.\n"
 		"  -r, --random <path>    Set a random image from a directory to display.\n"
 		"  -d, --daemonise        Run in the background/\n"
+		"  -n, --notify           Show image name in a desktop notification/\n"
 		"  -m, --mode <mode>      Set the mode to use for the image.\n"
 		"  -o, --output <name>    Set the output to operate on or * for all.\n"
 		"  -v, --version          Show the version number and quit.\n"
@@ -513,7 +516,7 @@ static void parse_command_line(int argc, char **argv,
 	int c;
 	while (1) {
 		int option_index = 0;
-		c = getopt_long(argc, argv, "c:hi:r:dm:o:v", long_options, &option_index);
+		c = getopt_long(argc, argv, "c:hi:r:dnm:o:v", long_options, &option_index);
 		if (c == -1) {
 			break;
 		}
@@ -575,6 +578,14 @@ static void parse_command_line(int argc, char **argv,
             dup2(fd, STDERR_FILENO);
             if (fd > STDERR_FILENO) close(fd);
 		    break;
+		case 'n':
+            NotifyNotification *notif;
+            notify_init("swaybg");
+            gchar *image_basename = g_path_get_basename(config->image_path);
+            notif = notify_notification_new(image_basename, NULL, NULL);
+            g_free(image_name);
+            notify_notification_show(notif, NULL);
+            break;
 		case 'm':  // mode
 			config->mode = parse_background_mode(optarg);
 			if (config->mode == BACKGROUND_MODE_INVALID) {
